@@ -1,15 +1,6 @@
-/// <reference path="react-redux.d.ts" />
-/// <reference path="../react/react.d.ts"/>
-/// <reference path="../react/react-dom.d.ts"/>
-/// <reference path="../redux/redux.d.ts" />
-/// <reference path="../history/history.d.ts" />
-/// <reference path="../react-router/react-router.d.ts" />
-/// <reference path="../object-assign/object-assign.d.ts" />
-
 import { Component, ReactElement } from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Router, RouterState } from 'react-router';
 import { Store, Dispatch, bindActionCreators } from 'redux';
 import { connect, Provider } from 'react-redux';
 import objectAssign = require('object-assign');
@@ -58,6 +49,36 @@ class CounterContainer extends Component<any, any> {
 
 }
 
+// Ensure connect's first two arguments can be replaced by wrapper functions
+interface ICounterStateProps {
+    value: number
+}
+interface ICounterDispatchProps {
+    onIncrement: () => void
+}
+connect<ICounterStateProps, ICounterDispatchProps, {}>(
+    () => mapStateToProps,
+    () => mapDispatchToProps
+)(Counter);
+// only first argument
+connect<ICounterStateProps, {}, {}>(
+    () => mapStateToProps
+)(Counter);
+// wrap only one argument
+connect<ICounterStateProps, ICounterDispatchProps, {}>(
+    mapStateToProps,
+    () => mapDispatchToProps
+)(Counter);
+// with extra arguments
+connect<ICounterStateProps, ICounterDispatchProps, {}>(
+    () => mapStateToProps,
+    () => mapDispatchToProps,
+    (s: ICounterStateProps, d: ICounterDispatchProps) =>
+        objectAssign({}, s, d),
+    { pure: true }
+)(Counter);
+
+
 class App extends Component<any, any> {
     render(): JSX.Element {
         // ...
@@ -78,8 +99,6 @@ ReactDOM.render((
 // https://github.com/rackt/react-redux/blob/master/docs/api.md
 //
 declare var store: Store<TodoState>;
-declare var routerState: RouterState;
-declare var history: HistoryModule.History;
 class MyRootComponent extends Component<any, any> {
 
 }
@@ -125,15 +144,6 @@ ReactDOM.render(
 //        document.getElementById('root')
 //    );
 //});
-
-
-//TODO: for React Router 1.0
-ReactDOM.render(
-    <Provider store={store}>
-        {() => <Router history={history}>...</Router>}
-    </Provider>,
-    targetEl
-);
 
 // Inject just dispatch and don't listen to store
 
@@ -238,8 +248,8 @@ connect(mapStateToProps3)(TodoApp);
 //    return { todos: state.todos };
 //}
 
-function mergeProps(stateProps: TodoState, dispatchProps: DispatchProps, ownProps: TodoProps): DispatchProps & TodoState {
-    return objectAssign({}, ownProps, {
+function mergeProps(stateProps: TodoState, dispatchProps: DispatchProps, ownProps: TodoProps): DispatchProps & TodoState & TodoProps {
+    return objectAssign({}, ownProps, dispatchProps, {
         todos: stateProps.todos[ownProps.userId],
         addTodo: (text: string) => dispatchProps.addTodo(ownProps.userId, text)
     });
