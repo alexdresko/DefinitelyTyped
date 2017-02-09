@@ -4,9 +4,10 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 interface ChartDataSet {
-    label: string;
-    fillColor: string;
-    strokeColor: string;
+    label?: string;
+    fillColor?: string;
+    strokeColor?: string;
+    backgroundColor?: string[];
 
     /* Line, Radar */
     pointColor?: string;
@@ -17,7 +18,7 @@ interface ChartDataSet {
     /* Bar */
     highlightFill?: string;
     highlightStroke?: string;
-    data: number[];
+    data?: number[];
 }
 
 interface LinearChartData {
@@ -190,7 +191,19 @@ interface PieChartOptions extends ChartSettings {
     legendTemplate?: string;
 }
 
+interface ChartInit {
+    data?: LinearChartData | CircularChartData;
+    options?: ChartOptions;
+    type?: "pie" | "doughnut" | "bar";
+}
+
 interface Chart {
+    new (context: CanvasRenderingContext2D): Chart;
+    new (context: HTMLElement, chartInit: ChartInit): Chart;
+    defaults: {
+        global: ChartSettings;
+    }
+
     Line(data: LinearChartData, options?: LineChartOptions): LinearInstance;
     Bar(data: LinearChartData, options?: BarChartOptions): LinearInstance;
     Radar(data: LinearChartData, options?: RadarChartOptions): LinearInstance;
@@ -200,9 +213,4 @@ interface Chart {
     Doughnut(data: CircularChartData[], options?: PieChartOptions): CircularInstance;
 }
 
-declare var Chart: {
-    new (context: CanvasRenderingContext2D): Chart;
-    defaults: {
-        global: ChartSettings;
-    }
-};
+declare var Chart: Chart
